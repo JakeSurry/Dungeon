@@ -3,7 +3,7 @@ from Block.block import Block
 
 class Key(Consumable):
     def __init__(self, name, textColor, keyType, amount, held=False, canDrop=True):
-        super().__init__('K', 'gold', None, textColor, name, 'key', 1, amount, held)
+        super().__init__('~', 'gold', None, textColor, name, 'key', 1, amount, held)
         self.keyType = keyType
     
     def useItem(self, obj=None):

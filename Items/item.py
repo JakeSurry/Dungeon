@@ -52,7 +52,7 @@ class Item():
     def destruct(self):
         pg.event.post(pg.event.Event(ev.DESTRUCT, obj=self))
 
-    def update(self):
+    def update(self, tick):
         if not self.held:
             return self.img
         return None

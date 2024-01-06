@@ -4,10 +4,12 @@ import pygame as pg
 from Block.Chest.rustychest import RustyChest
 from Items.Consumable.Key.rustykey import RustyKey
 from Items.Consumable.Coin.coin import Coin
+from Block.Trap.fire import Fire
 
 level1 = {RustyChest([Coin(3), Coin(6), Coin(1)], True):(10, 10),
           RustyChest([Coin(2)]):(4, 20),
-          RustyKey():(20, 2)}
+          RustyKey():(20, 2),
+          Fire():(20, 20)}
 
 class Map():
     def __init__(self, player, level=level1):
@@ -153,7 +155,7 @@ class Map():
     def destruct(self, obj):
         del self.level[obj]
 
-    def update(self):
+    def update(self, tick):
         self.getBlocked()
 
         imgs = self.player.update()
@@ -161,5 +163,5 @@ class Map():
             self.dispImg(img[0], img[1])
 
         for obj, pos in self.level.items():
-            img = obj.update()
+            img = obj.update(tick)
             self.dispImg(img, pos)

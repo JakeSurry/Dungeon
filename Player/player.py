@@ -39,6 +39,9 @@ class Player():
         self.usingItem = not self.usingItem
 
     def outInventory(self):
+        if self.cursor.active:
+            self.toggleCursor()
+
         if self.showingInv:
             self.cycleEquipped()
         self.showingInv = True

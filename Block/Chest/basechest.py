@@ -3,7 +3,7 @@ from Block.block import Block
 
 class Chest(Block):
     def __init__(self, chestType, name, items=[], locked=False):
-        super().__init__('C', 'brown', None, 'chest', name, True)
+        super().__init__('=', 'brown', None, 'chest', name, True)
         self.chestType = chestType
         self.items = items
         self.locked = locked
@@ -48,6 +48,3 @@ class Chest(Block):
         
         self.destruct()
         return itms
-            
-    def update(self):
-        return self.img

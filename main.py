@@ -14,6 +14,7 @@ player = Player()
 level = Map(player)  
 
 run = True
+animCounter = 0
 while run:
     for event in pg.event.get():
         match event.type:
@@ -32,8 +33,13 @@ while run:
             case ev.DESTRUCT:
                 level.destruct(event.obj)
 
+    animCounter += 1
+
     out.update()
-    level.update()
+    level.update(animCounter)
+
+    if animCounter == 60:
+        animCounter = 0
 
     #DEBUGGING
     #out.draw('bottom', f'ups:{int(clock.get_fps())}', (30, 8), 'black', 'grey')
