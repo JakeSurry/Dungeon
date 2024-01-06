@@ -4,7 +4,7 @@ import pygame as pg
 from Block.Chest.rustychest import RustyChest
 from Item.Consumable.Key.rustykey import RustyKey
 from Item.Consumable.Coin.coin import Coin
-from Block.Hazard.fire import Fire
+from Hazard.Lasting.fire import Fire
 from Block.block import Block
 from Item.item import Item
 
@@ -27,6 +27,22 @@ class Map():
         self.getBorders()
         #self.out = out
     
+    def getBorders(self):
+        borders = []
+        for x in range(-1, 27, 27):
+            for y in range(-1, 27):
+                borders.append((x, y))
+        for y in range(-1, 27, 27):
+            for x in range(0, 26):
+                borders.append((x, y))
+        self.borders = borders
+    
+    def initObjPositions(self):
+        self.objPositions = {}
+        for pos, objects in self.level.items():
+            for obj in objects:
+                self.objPositions[obj] = pos
+
     def onKey(self, key):
         mods = pg.key.get_mods()
         self.lastPressedKey = key
@@ -135,12 +151,6 @@ class Map():
         for line in useInfo.lines:
             self.dispLine(line)
 
-    def initObjPositions(self):
-        self.objPositions = {}
-        for pos, objects in self.level.items():
-            for obj in objects:
-                self.objPositions[obj] = pos
-
     def getBlocked(self):
         self.blocked = []
         for pos, objects in self.level.items():
@@ -148,17 +158,12 @@ class Map():
                 if obj.solid == True:
                     self.blocked.append(pos)
                     break
-    
-    def getBorders(self):
-        borders = []
-        for x in range(-1, 27, 27):
-            for y in range(-1, 27):
-                borders.append((x, y))
-        for y in range(-1, 27, 27):
-            for x in range(0, 26):
-                borders.append((x, y))
-        self.borders = borders
-    
+
+    def applyEffects(self, entity):
+        pos = entity.pos
+
+        pass
+
     def addToLevel(self, pos, obj):
         if pos in self.level.keys():
             self.level[pos].append(obj)
@@ -196,6 +201,7 @@ class Map():
 
     def update(self, tick):
         self.getBlocked()
+        self.applyEffects(self.player)
 
         imgs = self.player.update()
         for img in imgs:
