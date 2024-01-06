@@ -3,11 +3,13 @@ import pygame as pg
 from Events.events import ev
 
 class Block():
-    def __init__(self, img, color, bcolor, blockType, name, solid=True):
-        self.img = Img('game', img, color, bcolor)
-        self.blockType = blockType
-        self.solid = solid
-        self.name = name
+    def __init__(self):
+        self.img = Img('game', '?', 'white', 'purple')
+        self.blockType = 'block'
+        self.solid = True
+        self.name = 'block'
+
+        self.canHold = False
 
         self.animated = False
         self.animFrames = [self.img]

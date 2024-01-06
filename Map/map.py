@@ -2,20 +2,28 @@ from Events.events import ev
 import pygame as pg
 
 from Block.Chest.rustychest import RustyChest
-from Items.Consumable.Key.rustykey import RustyKey
-from Items.Consumable.Coin.coin import Coin
-from Block.Trap.fire import Fire
+from Item.Consumable.Key.rustykey import RustyKey
+from Item.Consumable.Coin.coin import Coin
+from Block.Hazard.fire import Fire
+from Block.block import Block
+from Item.item import Item
 
-level1 = {RustyChest([Coin(3), Coin(6), Coin(1)], True):(10, 10),
-          RustyChest([Coin(2)]):(4, 20),
-          RustyKey():(20, 2),
-          Fire():(20, 20)}
+level1 = {
+        (10, 10):[RustyChest([Coin(3), Coin(6), Coin(1)], True)],
+        (4, 20): [RustyChest([RustyKey()])],
+        (20, 2): [RustyKey()],
+        (20, 20):[Fire()],
+        (15, 15):[Block()],
+        (11, 12):[Item()]
+        }
+
 
 class Map():
     def __init__(self, player, level=level1):
         self.player = player
         self.level = level
         self.blocked = []
+        self.initObjPositions()
         self.getBorders()
         #self.out = out
     
@@ -46,22 +54,25 @@ class Map():
     def view(self, cpos):
         if self.player.cursor.active:
             self.player.showingInv = False
-            for obj, pos in self.level.items():
-                if pos == cpos:
-                    lines = obj.getShallowInfo()
-                    for line in lines:
-                        self.dispLine(line)
-                    return
+
+            objects = self.getObjects(cpos)
+
+            for obj in objects:
+                lines = obj.getShallowInfo()
+                for line in lines:
+                    self.dispLine(line)
 
             self.clearWin('side')
     
     def pickUp(self, entity):
-        for obj, pos in self.level.items():
-            if pos == entity.pos and obj.canHold:
+        objects = self.getObjects(entity.pos)
+        for obj in objects:
+            if obj.canHold:
                 obj.pickUp()
                 entity.pickUp(obj)
+                self.rmFromLevel(obj)
                 return
-            
+
         self.useItem(entity)
             
     def drop(self, entity):
@@ -69,7 +80,8 @@ class Map():
         if obj.canDrop:
             obj.drop()
             entity.drop(obj)
-            self.level[obj]=entity.pos
+
+            self.addToLevel(entity.pos, obj)
 
     def move(self, curPos, deltaPos, collision, limit=[]):
         newPos = (curPos[0]+deltaPos[0], curPos[1]+deltaPos[1])
@@ -88,46 +100,54 @@ class Map():
             self.player.pos = self.move(self.player.pos, dir, self.player.collision)
 
     def useItem(self, entity):
-        itm = entity.equipped
         useInfo = None
         
-        useRange = []
-        objInRange = {}
-        pos = entity.pos
+        useRange = entity.equipped.getUseRange(entity.pos)
 
-        for x in range(itm.itmRange*2+1):
-            useRange.append((pos[0]-itm.itmRange+x, pos[1]))
-        for y in range(itm.itmRange*2+1):
-            useRange.append((pos[0], pos[1]-itm.itmRange+y))
-        
-        for obj, pos in self.level.items():
-            if pos in useRange:
-                objInRange[obj] = pos
+        #TODO Don't like this, change objInRange to match same structure as level (key=pos, value=obj)
+        objInRange = {}
+        for tile in useRange:
+            if tile in self.level.keys():
+                for obj in self.level[tile]:
+                    objInRange[obj] = tile
 
         if entity.usingItem:
             for obj, pos in objInRange.items():
                 if pos == entity.cursor.pos:
-                    useInfo = itm.useItem(obj)
+                    useInfo = entity.equipped.useItem(obj)
                     break
-            if not useInfo == None:
-                if useInfo.used and itm.itmClass == 'consumable':
-                    entity.items.remove(itm)
-                    entity.equipped = entity.weapons[0]
-
-                for itm in useInfo.itms:
-                    self.level[itm[0]] = (itm[1][0]+pos[0], itm[1][1]+pos[1])
-                for img in useInfo.imgs:
-                    self.dispImg(img[0], img[1])
-                for line in useInfo.lines:
-                    self.dispLine(line)
+        if not useInfo == None:
+            self.interpUseInfo(useInfo, entity)
 
         entity.useItem(useRange, objInRange)
-        
+    
+    def interpUseInfo(self, useInfo, entity):
+        if useInfo.used and entity.equipped.itmClass == 'consumable':
+            rmItem = entity.equipped.consumeItem()
+            if rmItem:
+                entity.items.remove(entity.equipped)
+                entity.equipped = entity.weapons[0]
+
+        for itm in useInfo.itms:
+            self.addToLevel((itm[1][0]+entity.pos[0], itm[1][1]+entity.pos[1]), itm[0])
+        for img in useInfo.imgs:
+            self.dispImg(img[0], img[1])
+        for line in useInfo.lines:
+            self.dispLine(line)
+
+    def initObjPositions(self):
+        self.objPositions = {}
+        for pos, objects in self.level.items():
+            for obj in objects:
+                self.objPositions[obj] = pos
+
     def getBlocked(self):
         self.blocked = []
-        for obj, pos in self.level.items():
-            if obj.solid == True:
-                self.blocked.append(pos)
+        for pos, objects in self.level.items():
+            for obj in objects:
+                if obj.solid == True:
+                    self.blocked.append(pos)
+                    break
     
     def getBorders(self):
         borders = []
@@ -138,6 +158,28 @@ class Map():
             for x in range(0, 26):
                 borders.append((x, y))
         self.borders = borders
+    
+    def addToLevel(self, pos, obj):
+        if pos in self.level.keys():
+            self.level[pos].append(obj)
+        else:
+            self.level[pos] = [obj]
+        self.objPositions[obj] = pos
+    
+    def rmFromLevel(self, obj):
+        pos = self.objPositions[obj]
+        self.level[pos].remove(obj)
+        del self.objPositions[obj]
+
+        if self.level[pos] == []:
+            del self.level[pos]
+    
+    def getObjects(self, pos):
+        objects = []
+        if pos in self.level.keys():
+            objects += self.level[pos]
+
+        return objects
 
     def dispImg(self, img, pos):
         if img == None:
@@ -151,9 +193,6 @@ class Map():
     
     def clearWin(self, win):
         pg.event.post(pg.event.Event(ev.CLEARWIN, win=win))
-    
-    def destruct(self, obj):
-        del self.level[obj]
 
     def update(self, tick):
         self.getBlocked()
@@ -162,6 +201,7 @@ class Map():
         for img in imgs:
             self.dispImg(img[0], img[1])
 
-        for obj, pos in self.level.items():
-            img = obj.update(tick)
-            self.dispImg(img, pos)
+        for pos, objects in self.level.items():
+            for obj in objects:
+                img = obj.update(tick)
+                self.dispImg(img, pos)

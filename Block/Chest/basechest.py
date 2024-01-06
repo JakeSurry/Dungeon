@@ -2,11 +2,15 @@ from Display.dispTypes import *
 from Block.block import Block
 
 class Chest(Block):
-    def __init__(self, chestType, name, items=[], locked=False):
-        super().__init__('=', 'brown', None, 'chest', name, True)
-        self.chestType = chestType
-        self.items = items
-        self.locked = locked
+    def __init__(self):
+        super().__init__()
+        self.img = Img('game', '=', 'brown', None)
+        self.blockType = 'chest'
+
+        self.chestType = 'rusty'
+        self.items = []
+        self.locked = False
+
         self.getStatus()
         self.solid = True
     

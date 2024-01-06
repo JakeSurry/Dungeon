@@ -31,7 +31,7 @@ while run:
             case ev.VIEW:
                 level.view()
             case ev.DESTRUCT:
-                level.destruct(event.obj)
+                level.rmFromLevel(event.obj)
 
     animCounter += 1
 

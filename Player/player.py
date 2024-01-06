@@ -2,7 +2,7 @@ import pygame as pg
 from Events.events import ev
 from Display.dispTypes import *
 from Player.cursor import Cursor
-from Items.Weapon.Melee.hands import Hands
+from Item.Weapon.Melee.hands import Hands
 
 class Player():
     def __init__(self):
