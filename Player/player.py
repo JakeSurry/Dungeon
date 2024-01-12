@@ -9,6 +9,7 @@ class Player():
         self.pos = (0, 0)
         self.img = Img('game', '@', 'green', None) 
         self.health = 3
+        self.canTakeDamage = True
 
         self.cursor = Cursor()
 
@@ -113,6 +114,11 @@ class Player():
             self.cursor.limit = useRange
         else:
             self.cursor.limit = []
+    
+    def takeDamage(self, dmg, dmgType):
+        self.health -= dmg
+        if self.health <= 0:
+            print('dead')
 
     def onKey(self, key):
         if not key == pg.K_h:

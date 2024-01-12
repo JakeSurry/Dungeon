@@ -5,11 +5,13 @@ from Events.events import ev
 class Block():
     def __init__(self):
         self.img = Img('game', '?', 'white', 'purple')
+        self.objType = 'block'
         self.blockType = 'block'
         self.solid = True
         self.name = 'block'
 
         self.canHold = False
+        self.canTakeDamage = False
 
         self.animated = False
         self.animFrames = [self.img]
@@ -29,7 +31,7 @@ class Block():
         lines.append(Line('side', self.name, self.img.color, None))
 
         return lines
-
+    
     def destruct(self):
         pg.event.post(pg.event.Event(ev.DESTRUCT, obj=self))
 

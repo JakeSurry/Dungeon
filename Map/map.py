@@ -11,7 +11,7 @@ from Item.item import Item
 level1 = {
         (10, 10):[RustyChest([Coin(3), Coin(6), Coin(1)], True)],
         (4, 20): [RustyChest([RustyKey()])],
-        (20, 2): [RustyKey()],
+        #(20, 2): [RustyKey()],
         (20, 20):[Fire()],
         (15, 15):[Block()],
         (11, 12):[Item()]
@@ -159,11 +159,6 @@ class Map():
                     self.blocked.append(pos)
                     break
 
-    def applyEffects(self, entity):
-        pos = entity.pos
-
-        pass
-
     def addToLevel(self, pos, obj):
         if pos in self.level.keys():
             self.level[pos].append(obj)
@@ -207,7 +202,12 @@ class Map():
         for img in imgs:
             self.dispImg(img[0], img[1])
 
+        for obj in self.getObjects(self.player.pos):
+            if obj.objType == 'hazard':
+                obj.applyEffects(self.player)
+
         for pos, objects in self.level.items():
             for obj in objects:
                 img = obj.update(tick)
                 self.dispImg(img, pos)
+        

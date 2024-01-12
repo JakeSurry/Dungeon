@@ -13,6 +13,7 @@ class Item():
     def __init__(self):
         self.img = Img('game', '?', 'purple', None)
         self.name = 'item'
+        self.objType = 'item'
         self.itmClass = 'none'
         self.itmType = 'none'
         self.range = 0
@@ -21,6 +22,7 @@ class Item():
         self.held = False
         self.canHold = True
         self.canDrop = True
+        self.canTakeDamage = False
         
         self.useInfo = UseInfo()
     
